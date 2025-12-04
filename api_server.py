@@ -14,10 +14,14 @@ from typing import Dict, Any, List
 
 app = FastAPI()
 
-# Enable CORS for Next.js (running on port 3000)
+# Enable CORS for Next.js (running on port 3000 and Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://trading-back-test-ultra-v5.vercel.app",
+        "https://*.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
