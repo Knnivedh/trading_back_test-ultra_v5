@@ -1,16 +1,17 @@
 {
-    "balance": 28273.388671874964,
-    "active_trade": null,
+    "balance": 28270.8172433036,
+    "active_trade": {
+        "entry_time": "2025-12-04 15:30:28",
+        "type": "SELL",
+        "entry_price": 26010.349609375,
+        "sl": 26038.01904296875,
+        "tp1": 25955.0107421875,
+        "tp2": 25913.506591796875,
+        "qty": 30,
+        "ai_score": 7.5
+    },
     "trades_today": 0,
     "last_trade_date": null,
     "consecutive_wins": 0,
-    "consecutive_losses": 2,
-    "last_analysis": {
-        "time": "15:25:09",
-        "price": 26030.75,
-        "adx": 25.731184265090832,
-        "signal": "NONE",
-        "ai_score": 0,
-        "ai_reason": "Monitoring market..."
-    }
+    "consecutive_losses": 2
 }
