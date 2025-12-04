@@ -2,11 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy dashboard files
-COPY dashboard-next/package*.json ./
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-COPY dashboard-next ./
+# Copy all files
+COPY . .
 
 # Build Next.js
 RUN npm run build
