@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: v5-trading-bot
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: CEREBRAS_API_KEY
+        sync: false
+      - key: PORT
+        value: 8000
+    autoDeploy: true

@@ -1,0 +1,25 @@
+{
+    "balance": 29121.605189732123,
+    "active_trade": {
+        "entry_time": "2025-12-04 15:05:27",
+        "type": "BUY",
+        "entry_price": 26049.5,
+        "sl": 26022.993233816964,
+        "tp1": 26102.513532366072,
+        "tp2": 26142.273681640625,
+        "qty": 32,
+        "ai_score": 7.5
+    },
+    "trades_today": 0,
+    "last_trade_date": null,
+    "consecutive_wins": 0,
+    "consecutive_losses": 1,
+    "last_analysis": {
+        "time": "15:05:27",
+        "price": 26049.5,
+        "adx": 20.624408547070793,
+        "signal": "BUY",
+        "ai_score": 7.5,
+        "ai_reason": "Conf: 3/6 | VWAP,BB,ADX"
+    }
+}
