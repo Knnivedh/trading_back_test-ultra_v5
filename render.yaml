@@ -1,4 +1,5 @@
 services:
+  # Trading Bot + API
   - type: web
     name: v5-trading-bot
     env: docker
@@ -9,4 +10,15 @@ services:
         sync: false
       - key: PORT
         value: 8000
+    autoDeploy: true
+  
+  # Next.js Dashboard
+  - type: web
+    name: v5-dashboard
+    env: docker
+    plan: free
+    dockerfilePath: ./dashboard-next/Dockerfile
+    envVars:
+      - key: PORT
+        value: 3000
     autoDeploy: true
