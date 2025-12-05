@@ -21,3 +21,4 @@ uvicorn api_server:app --host 0.0.0.0 --port 8000\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
 CMD ["/app/start.sh"]
+ 

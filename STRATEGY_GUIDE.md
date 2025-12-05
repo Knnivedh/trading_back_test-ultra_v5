@@ -81,3 +81,4 @@ We didn't guess. We ran a **Simulation**:
 4.  **It grows:** Increasing bet size on winning streaks maximizes profit.
 
 This is a professional-grade **Algorithmic Trading Strategy**.
+  
