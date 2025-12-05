@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { TrendingUp, Activity, DollarSign, Brain, Clock } from 'lucide-react';
+import { TrendingUp, Activity, DollarSign, Brain, Clock, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface State {
   balance: number;
@@ -24,24 +24,48 @@ interface State {
   };
 }
 
+const API_URL = 'https://trading-back-test-ultra-v5.onrender.com';
+
 export default function Dashboard() {
   const [state, setState] = useState<State | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setError(null);
+      const res = await axios.get(`${API_URL}/state`, { timeout: 30000 });
+      setState(res.data);
+      setLoading(false);
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      setLoading(false);
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('Bot is waking up... (Render free tier sleeps after 15 min of inactivity)');
+      } else if (err.response?.status === 502) {
+        setError('Bot is starting up, please wait...');
+      } else {
+        setError('Cannot connect to trading bot. It may be sleeping or offline.');
+      }
+    }
+  };
+
+  const wakeUpBot = async () => {
+    setRetrying(true);
+    setError('Waking up bot... This may take 30-60 seconds on free tier.');
+    try {
+      await axios.get(`${API_URL}/`, { timeout: 60000 });
+      await fetchData();
+    } catch (err) {
+      setError('Bot is still waking up. Please try again in a moment.');
+    }
+    setRetrying(false);
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('https://trading-back-test-ultra-v5.onrender.com/state');
-        setState(res.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -85,33 +109,37 @@ export default function Dashboard() {
     document.head.appendChild(script);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-2xl text-cyan-400 animate-pulse">Loading V5.0 Ultra...</div>
-      </div>
-    );
-  }
-
-  if (!state) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-xl text-red-400">⚠️ Bot Offline</div>
-      </div>
-    );
-  }
-
-  const pnl = state.balance - 30000;
-  const pnlPct = (pnl / 30000) * 100;
+  // Show dashboard with error banner if API fails (instead of blocking)
+  const pnl = state ? state.balance - 30000 : 0;
+  const pnlPct = state ? (pnl / 30000) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-6">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
           V5.0 ULTRA DASHBOARD
         </h1>
         <p className="text-gray-400 mt-2">Real-Time AI Trading System</p>
       </div>
+
+      {/* Error/Status Banner */}
+      {error && (
+        <div className="mb-6 bg-yellow-900/30 border border-yellow-500/50 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="text-yellow-400" size={24} />
+            <span className="text-yellow-200">{error}</span>
+          </div>
+          <button
+            onClick={wakeUpBot}
+            disabled={retrying}
+            className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-500 disabled:bg-gray-600 px-4 py-2 rounded-lg transition-colors"
+          >
+            <RefreshCw className={`${retrying ? 'animate-spin' : ''}`} size={18} />
+            {retrying ? 'Waking...' : 'Wake Up Bot'}
+          </button>
+        </div>
+      )}
 
       {/* Top Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -120,7 +148,7 @@ export default function Dashboard() {
             <DollarSign className="text-cyan-400" size={24} />
             <span className="text-xs text-gray-400">BALANCE</span>
           </div>
-          <div className="text-3xl font-bold">₹{state.balance.toLocaleString()}</div>
+          <div className="text-3xl font-bold">₹{state?.balance?.toLocaleString() || '30,000'}</div>
           <div className={`text-sm mt-1 ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {pnl >= 0 ? '+' : ''}₹{pnl.toFixed(2)} ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(2)}%)
           </div>
@@ -131,7 +159,7 @@ export default function Dashboard() {
             <TrendingUp className="text-purple-400" size={24} />
             <span className="text-xs text-gray-400">ACTIVE TRADE</span>
           </div>
-          {state.active_trade ? (
+          {state?.active_trade ? (
             <>
               <div className={`text-2xl font-bold ${state.active_trade.type === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
                 {state.active_trade.type}
@@ -151,10 +179,10 @@ export default function Dashboard() {
             <span className="text-xs text-gray-400">LIVE PRICE</span>
           </div>
           <div className="text-3xl font-bold">
-            ₹{state.last_analysis?.price.toLocaleString() || '---'}
+            ₹{state?.last_analysis?.price?.toLocaleString() || '---'}
           </div>
           <div className="text-sm text-gray-400 mt-1">
-            ADX: {state.last_analysis?.adx.toFixed(1) || '---'}
+            ADX: {state?.last_analysis?.adx?.toFixed(1) || '---'}
           </div>
         </div>
 
@@ -164,10 +192,10 @@ export default function Dashboard() {
             <span className="text-xs text-gray-400">AI SCORE</span>
           </div>
           <div className="text-3xl font-bold">
-            {state.last_analysis?.ai_score.toFixed(1) || '0'}<span className="text-lg">/10</span>
+            {state?.last_analysis?.ai_score?.toFixed(1) || '0'}<span className="text-lg">/10</span>
           </div>
           <div className="text-sm text-gray-400 mt-1">
-            {state.last_analysis?.signal || 'MONITORING'}
+            {state?.last_analysis?.signal || 'MONITORING'}
           </div>
         </div>
       </div>
@@ -179,12 +207,11 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold">Live TradingView Chart (Nifty 50)</h2>
           <span className="ml-auto text-xs text-gray-400">5-Min | NSE</span>
         </div>
-
         <div id="tradingview_chart" className="w-full h-[600px] rounded-lg overflow-hidden"></div>
       </div>
 
       {/* AI Brain Panel */}
-      {state.last_analysis && (
+      {state?.last_analysis && (
         <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 border-2 border-cyan-500/50 rounded-xl p-8 mb-8 backdrop-blur-sm">
           <div className="flex items-center gap-3 mb-4">
             <Brain className="text-cyan-400 animate-pulse" size={32} />
@@ -192,7 +219,6 @@ export default function Dashboard() {
             <Clock className="text-gray-400 ml-auto" size={20} />
             <span className="text-gray-400">{state.last_analysis.time}</span>
           </div>
-
           <div className="space-y-3">
             <div>
               <span className="text-gray-400">Signal Detected:</span>
@@ -202,12 +228,10 @@ export default function Dashboard() {
                 {state.last_analysis.signal}
               </span>
             </div>
-
             <div>
               <span className="text-gray-400">AI Reasoning:</span>
               <p className="text-cyan-400 mt-1 text-lg">{state.last_analysis.ai_reason}</p>
             </div>
-
             <div className="flex items-center gap-4 mt-4">
               <div className="h-3 flex-1 bg-gray-700 rounded-full overflow-hidden">
                 <div
@@ -227,8 +251,8 @@ export default function Dashboard() {
       {/* Status Footer */}
       <div className="text-center text-gray-500 text-sm">
         <div className="inline-flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          System Online | Refreshing every 5s | {state.active_trade ? `Active: 1 ${state.active_trade.type} Trade` : 'No Active Trades'}
+          <div className={`w-2 h-2 rounded-full animate-pulse ${state ? 'bg-green-400' : 'bg-yellow-400'}`} />
+          {state ? 'Bot Online' : 'Bot Offline'} | Refreshing every 10s | {state?.active_trade ? `Active: 1 ${state.active_trade.type} Trade` : 'No Active Trades'}
         </div>
       </div>
     </div>
