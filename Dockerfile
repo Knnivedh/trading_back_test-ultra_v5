@@ -7,8 +7,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-# Copy application files
-COPY live_paper_trade_v6.py .
+COPY live_paper_trade_v8.py .
 COPY api_server.py .
 COPY live_state.json .
 
@@ -17,7 +16,7 @@ EXPOSE 8000
 
 # Create startup script
 RUN echo '#!/bin/bash\n\
-    python live_paper_trade_v6.py & \n\
+    python live_paper_trade_v8.py & \n\
     uvicorn api_server:app --host 0.0.0.0 --port 8000\n\
     ' > /app/start.sh && chmod +x /app/start.sh
 

@@ -1,7 +1,7 @@
 services:
   # Trading Bot + API
   - type: web
-    name: v5-trading-bot
+    name: v8-trading-bot
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
