@@ -44,7 +44,7 @@ interface State {
   };
 }
 
-const API_URL = 'https://trading-back-test-ultra-v5.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://trading-back-test-ultra-v5.onrender.com';
 const STARTING_BALANCE = 30000;
 
 export default function Dashboard() {
