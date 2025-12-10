@@ -1,9 +1,0 @@
-{
-    "balance": 30000,
-    "active_trade": null,
-    "trades_today": 0,
-    "last_trade_date": null,
-    "consecutive_wins": 0,
-    "consecutive_losses": 0,
-    "last_analysis": null
-}
